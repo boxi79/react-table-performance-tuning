@@ -8,7 +8,19 @@ const getSubElements = (parent, selector) => {
     });
 };
 
+let elemsWithBoundingRects = [];
+const pbsGetBoundingClientRect = element => {
+    // Check if we already got the client rect before.
+    if (!element._boundingClientRect) {
+      // If not, get it then store it for future use.
+        element._boundingClientRect = element.getBoundingClientRect();
+        elemsWithBoundingRects.push(element);
+    }
+    return element._boundingClientRect;
+};
+
 export default {
     getElementStyle,
-    getSubElements
+    getSubElements,
+    pbsGetBoundingClientRect
 };

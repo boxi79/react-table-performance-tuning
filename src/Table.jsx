@@ -8,6 +8,8 @@ import uniqueid from './uniqueid';
 import styles from './index.styl';
 import TableTemplate from './TableTemplate';
 
+// Cache: Our client rects are kept here, we can use this to clear them later.
+
 class Table extends PureComponent {
     static propTypes = {
         bordered: PropTypes.bool,
@@ -83,8 +85,8 @@ class Table extends PureComponent {
                 const { maxHeight } = this.props;
                 const tableTopBorder = helper.getElementStyle(this.tableWrapper, 'border-top-width');
                 const tableBottomBorder = helper.getElementStyle(this.tableWrapper, 'border-bottom-width');
-                const headerHeight = this.title ? this.title.getBoundingClientRect().height : 0;
-                const footerHeight = this.foot ? this.foot.getBoundingClientRect().height : 0;
+                const headerHeight = this.title ? helper.pbsGetBoundingClientRect(this.title).height : 0;
+                const footerHeight = this.foot ? helper.pbsGetBoundingClientRect(this.foot).height : 0;
                 const tableHeight = maxHeight - headerHeight - footerHeight - parseInt(tableTopBorder, 10) - parseInt(tableBottomBorder, 10);
                 this.actions.sizeTable(tableHeight);
             }
@@ -93,7 +95,7 @@ class Table extends PureComponent {
             if (this.mainTable) {
                 this.actions.sizeMainTable();
                 if (tablehHight) {
-                    const headerHeight = this.mainTable.tableHeader ? this.mainTable.tableHeader.header.getBoundingClientRect().height : 0;
+                    const headerHeight = this.mainTable.tableHeader ? helper.pbsGetBoundingClientRect(this.mainTable.tableHeader.header).height : 0;
                     const bodyHeight = tablehHight ? (tablehHight - headerHeight) : 0;
                     this.mainTable.tableBody.body.style['max-height'] = `${bodyHeight}px`;
                 }
@@ -139,9 +141,9 @@ class Table extends PureComponent {
             const fixexHeaderRow = fixedTHeader ? helper.getSubElements(fixedTHeader, `.${styles.tr}`) : [];
             const fixedTBody = fixedBody.body;
             const fixedBodyRows = helper.getSubElements(fixedTBody, `.${styles.tr}`);
-            const mainBodyOffset = mainTBody.getBoundingClientRect();
+            const mainBodyOffset = helper.pbsGetBoundingClientRect(mainTBody);
             const scrollHeight = (mainBodyOffset.height - mainTBody.clientHeight);
-            const totalWidth = fixedBodyRows[0].getBoundingClientRect().width;
+            const totalWidth = helper.pbsGetBoundingClientRect(fixedBodyRows[0]).width;
             let i;
             let j;
             let headerCell;
@@ -204,7 +206,7 @@ class Table extends PureComponent {
                 }
                 for (i = 0; i < headerCells.length; i++) {
                     th = headerCells[i];
-                    widthList[i] = th.getBoundingClientRect().width;
+                    widthList[i] = helper.pbsGetBoundingClientRect(th).width;
                 }
             }
             return widthList;
@@ -222,7 +224,7 @@ class Table extends PureComponent {
                 th = headerCells[i];
                 cellContent = helper.getSubElements(th, `.${styles.thContent}`);
                 content = cellContent[0];
-                thHeight = (content ? content.getBoundingClientRect().height : 0) +
+                thHeight = (content ? helper.pbsGetBoundingClientRect(content).height : 0) +
                             parseInt(helper.getElementStyle(th, 'padding-top'), 10) +
                             parseInt(helper.getElementStyle(th, 'padding-bottom'), 10) +
                             parseInt(helper.getElementStyle(th, 'border-top-width'), 10) +
@@ -308,7 +310,7 @@ class Table extends PureComponent {
                             cellsWidth[j] = cellWidth;
                         } else {
                             thWidth = thsWidth[j] || 0;
-                            tdWidth = td.getBoundingClientRect().width;
+                            tdWidth = helper.pbsGetBoundingClientRect(td).width;
                             cellWidth = cellsWidth[j] || 0;
                             cellsWidth[j] = Math.max(cellWidth, thWidth, tdWidth);
                             nonCustomColumnsIndex.push(j);
@@ -373,7 +375,7 @@ class Table extends PureComponent {
                     td = bodyCell[j];
                     cellContent = helper.getSubElements(td, `.${styles.tdContent}`);
                     content = cellContent[0];
-                    tdHeight = (content ? content.getBoundingClientRect().height : 0) +
+                    tdHeight = (content ? helper.pbsGetBoundingClientRect(content).height : 0) +
                                 parseInt(helper.getElementStyle(td, 'padding-top'), 10) +
                                 parseInt(helper.getElementStyle(td, 'padding-bottom'), 10) +
                                 parseInt(helper.getElementStyle(td, 'border-top-width'), 10) +
@@ -422,7 +424,7 @@ class Table extends PureComponent {
             const tHeader = this.mainTable.tableHeader.header;
             const tBody = this.mainTable.tableBody.body;
             const headerRows = helper.getSubElements(tHeader, `.${styles.tr}`);
-            const offsetWidth = tBody.getBoundingClientRect().width;
+            const offsetWidth = helper.pbsGetBoundingClientRect(tBody).width;
             const clientWidth = tBody.clientWidth;
             const scrollbarWidth = offsetWidth - clientWidth;
             let totalWidth;
