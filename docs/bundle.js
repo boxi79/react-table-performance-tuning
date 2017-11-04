@@ -92,7 +92,13 @@ var _react = __webpack_require__("./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
 
+var _chainedFunction = __webpack_require__("./node_modules/chained-function/lib/index.js");
+
+var _chainedFunction2 = _interopRequireDefault(_chainedFunction);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -126,7 +132,9 @@ var Checkbox = (_temp = _class = function (_PureComponent) {
         value: function render() {
             var _this2 = this;
 
-            var props = _extends({}, this.props);
+            var _props = this.props,
+                onChange = _props.onChange,
+                props = _objectWithoutProperties(_props, ['onChange']);
 
             delete props.indeterminate;
 
@@ -134,8 +142,21 @@ var Checkbox = (_temp = _class = function (_PureComponent) {
                 type: 'checkbox',
                 ref: function ref(el) {
                     _this2.el = el;
-                }
+                },
+                onChange: (0, _chainedFunction2.default)(function () {
+                    _this2.el.indeterminate = _this2.props.indeterminate;
+                }, onChange)
             }));
+        }
+    }, {
+        key: 'checked',
+        get: function get() {
+            return this.el.checked;
+        }
+    }, {
+        key: 'indeterminate',
+        get: function get() {
+            return this.el.indeterminate;
         }
     }]);
 
@@ -1221,6 +1242,57 @@ function getOption(options, name, defaultValue) {
     return value;
 }
 
+
+/***/ }),
+
+/***/ "./node_modules/chained-function/lib/chained-function.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+exports.default = function () {
+    for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
+        funcs[_key] = arguments[_key];
+    }
+
+    return funcs.filter(function (func) {
+        return typeof func === 'function';
+    }).reduce(function (accumulator, func) {
+        if (accumulator === null) {
+            return func;
+        }
+
+        return function chainedFunction() {
+            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
+            }
+
+            accumulator.apply(this, args);
+            func.apply(this, args);
+        };
+    }, null);
+};
+
+/***/ }),
+
+/***/ "./node_modules/chained-function/lib/index.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _chainedFunction = __webpack_require__("./node_modules/chained-function/lib/chained-function.js");
+
+var _chainedFunction2 = _interopRequireDefault(_chainedFunction);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = _chainedFunction2.default;
 
 /***/ }),
 
@@ -26138,6 +26210,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// Cache: Our client rects are kept here, we can use this to clear them later.
+
 var Table = (_temp2 = _class = function (_PureComponent) {
     _inherits(Table, _PureComponent);
 
@@ -26185,8 +26259,8 @@ var Table = (_temp2 = _class = function (_PureComponent) {
 
                     var tableTopBorder = _helper2.default.getElementStyle(_this.tableWrapper, 'border-top-width');
                     var tableBottomBorder = _helper2.default.getElementStyle(_this.tableWrapper, 'border-bottom-width');
-                    var headerHeight = _this.title ? _this.title.getBoundingClientRect().height : 0;
-                    var footerHeight = _this.foot ? _this.foot.getBoundingClientRect().height : 0;
+                    var headerHeight = _this.title ? _helper2.default.pbsGetBoundingClientRect(_this.title).height : 0;
+                    var footerHeight = _this.foot ? _helper2.default.pbsGetBoundingClientRect(_this.foot).height : 0;
                     var tableHeight = maxHeight - headerHeight - footerHeight - parseInt(tableTopBorder, 10) - parseInt(tableBottomBorder, 10);
                     _this.actions.sizeTable(tableHeight);
                 }
@@ -26195,7 +26269,7 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                 if (_this.mainTable) {
                     _this.actions.sizeMainTable();
                     if (tablehHight) {
-                        var headerHeight = _this.mainTable.tableHeader ? _this.mainTable.tableHeader.header.getBoundingClientRect().height : 0;
+                        var headerHeight = _this.mainTable.tableHeader ? _helper2.default.pbsGetBoundingClientRect(_this.mainTable.tableHeader.header).height : 0;
                         var bodyHeight = tablehHight ? tablehHight - headerHeight : 0;
                         _this.mainTable.tableBody.body.style['max-height'] = bodyHeight + 'px';
                     }
@@ -26241,9 +26315,9 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                 var fixexHeaderRow = fixedTHeader ? _helper2.default.getSubElements(fixedTHeader, '.' + _index2.default.tr) : [];
                 var fixedTBody = fixedBody.body;
                 var fixedBodyRows = _helper2.default.getSubElements(fixedTBody, '.' + _index2.default.tr);
-                var mainBodyOffset = mainTBody.getBoundingClientRect();
+                var mainBodyOffset = _helper2.default.pbsGetBoundingClientRect(mainTBody);
                 var scrollHeight = mainBodyOffset.height - mainTBody.clientHeight;
-                var totalWidth = fixedBodyRows[0].getBoundingClientRect().width;
+                var totalWidth = _helper2.default.pbsGetBoundingClientRect(fixedBodyRows[0]).width;
                 var i = void 0;
                 var j = void 0;
                 var headerCell = void 0;
@@ -26306,7 +26380,7 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                     }
                     for (i = 0; i < headerCells.length; i++) {
                         th = headerCells[i];
-                        widthList[i] = th.getBoundingClientRect().width;
+                        widthList[i] = _helper2.default.pbsGetBoundingClientRect(th).width;
                     }
                 }
                 return widthList;
@@ -26324,7 +26398,7 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                     th = headerCells[i];
                     cellContent = _helper2.default.getSubElements(th, '.' + _index2.default.thContent);
                     content = cellContent[0];
-                    thHeight = (content ? content.getBoundingClientRect().height : 0) + parseInt(_helper2.default.getElementStyle(th, 'padding-top'), 10) + parseInt(_helper2.default.getElementStyle(th, 'padding-bottom'), 10) + parseInt(_helper2.default.getElementStyle(th, 'border-top-width'), 10) + parseInt(_helper2.default.getElementStyle(th, 'border-bottom-width'), 10);
+                    thHeight = (content ? _helper2.default.pbsGetBoundingClientRect(content).height : 0) + parseInt(_helper2.default.getElementStyle(th, 'padding-top'), 10) + parseInt(_helper2.default.getElementStyle(th, 'padding-bottom'), 10) + parseInt(_helper2.default.getElementStyle(th, 'border-top-width'), 10) + parseInt(_helper2.default.getElementStyle(th, 'border-bottom-width'), 10);
                     headerHeight = Math.max(headerHeight, thHeight);
                 }
                 return headerHeight;
@@ -26405,7 +26479,7 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                                 cellsWidth[j] = cellWidth;
                             } else {
                                 thWidth = thsWidth[j] || 0;
-                                tdWidth = td.getBoundingClientRect().width;
+                                tdWidth = _helper2.default.pbsGetBoundingClientRect(td).width;
                                 cellWidth = cellsWidth[j] || 0;
                                 cellsWidth[j] = Math.max(cellWidth, thWidth, tdWidth);
                                 nonCustomColumnsIndex.push(j);
@@ -26470,7 +26544,7 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                         td = bodyCell[j];
                         cellContent = _helper2.default.getSubElements(td, '.' + _index2.default.tdContent);
                         content = cellContent[0];
-                        tdHeight = (content ? content.getBoundingClientRect().height : 0) + parseInt(_helper2.default.getElementStyle(td, 'padding-top'), 10) + parseInt(_helper2.default.getElementStyle(td, 'padding-bottom'), 10) + parseInt(_helper2.default.getElementStyle(td, 'border-top-width'), 10) + parseInt(_helper2.default.getElementStyle(td, 'border-bottom-width'), 10);
+                        tdHeight = (content ? _helper2.default.pbsGetBoundingClientRect(content).height : 0) + parseInt(_helper2.default.getElementStyle(td, 'padding-top'), 10) + parseInt(_helper2.default.getElementStyle(td, 'padding-bottom'), 10) + parseInt(_helper2.default.getElementStyle(td, 'border-top-width'), 10) + parseInt(_helper2.default.getElementStyle(td, 'border-bottom-width'), 10);
                         cellHeight = Math.max(cellHeight, tdHeight);
                     }
                     rowsHeight[i] = cellHeight;
@@ -26515,7 +26589,7 @@ var Table = (_temp2 = _class = function (_PureComponent) {
                 var tHeader = _this.mainTable.tableHeader.header;
                 var tBody = _this.mainTable.tableBody.body;
                 var headerRows = _helper2.default.getSubElements(tHeader, '.' + _index2.default.tr);
-                var offsetWidth = tBody.getBoundingClientRect().width;
+                var offsetWidth = _helper2.default.pbsGetBoundingClientRect(tBody).width;
                 var clientWidth = tBody.clientWidth;
                 var scrollbarWidth = offsetWidth - clientWidth;
                 var totalWidth = void 0;
@@ -26938,13 +27012,7 @@ var TableBody = (_temp = _class = function (_PureComponent) {
         }
     }, {
         key: 'componentDidUpdate',
-        value: function componentDidUpdate(prevProps, prevState) {
-            var scrollTop = this.props.scrollTop;
-
-            if (this.body.scrollTop !== scrollTop) {
-                this.body.scrollTop = scrollTop;
-            }
-        }
+        value: function componentDidUpdate(prevProps, prevState) {}
     }, {
         key: 'getRowKey',
         value: function getRowKey(record, index) {
@@ -27186,13 +27254,7 @@ var TableHeader = (_temp = _class = function (_Component) {
 
     _createClass(TableHeader, [{
         key: 'componentDidUpdate',
-        value: function componentDidUpdate(prevProps, prevState) {
-            var scrollLeft = this.props.scrollLeft;
-
-            if (this.header.scrollLeft !== scrollLeft) {
-                this.header.scrollLeft = scrollLeft;
-            }
-        }
+        value: function componentDidUpdate(prevProps, prevState) {}
     }, {
         key: 'shouldComponentUpdate',
         value: function shouldComponentUpdate(nextProps, nextState) {
@@ -27692,9 +27754,21 @@ var getSubElements = function getSubElements(parent, selector) {
     });
 };
 
+var elemsWithBoundingRects = [];
+var pbsGetBoundingClientRect = function pbsGetBoundingClientRect(element) {
+    // Check if we already got the client rect before.
+    if (!element._boundingClientRect) {
+        // If not, get it then store it for future use.
+        element._boundingClientRect = element.getBoundingClientRect();
+        elemsWithBoundingRects.push(element);
+    }
+    return element._boundingClientRect;
+};
+
 exports.default = {
     getElementStyle: getElementStyle,
-    getSubElements: getSubElements
+    getSubElements: getSubElements,
+    pbsGetBoundingClientRect: pbsGetBoundingClientRect
 };
 
 /***/ }),
@@ -27785,4 +27859,4 @@ exports.default = uniqueid;
 /***/ })
 
 /******/ });
-//# sourceMappingURL=bundle.js.map?3e1e045c9bde839e4671
+//# sourceMappingURL=bundle.js.map?6bb8a047c1710ae86dc4
